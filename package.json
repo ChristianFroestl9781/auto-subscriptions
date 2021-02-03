@@ -1,0 +1,21 @@
+{
+  "name": "csi-otto",
+  "version": "1.0.0",
+  "description": "CSI:OTTO - A Microservices Murder Mystery",
+  "scripts": {
+    "reveal": "reveal-md index.md --theme theme.css --highlight-theme atom-one-dark-reasonable",
+    "preexport:pdf": "cp index.md 2print.md && replace-in-file '/class=\"fragment\"/g' ' ' 2print.md --isRegex",
+    "export:pdf": "reveal-md 2print.md -w --css theme.css --theme white --print csi-otto.pdf",
+    "postexport:pdf": "rm 2print.md"
+  },
+  "author": "Jens Fischer <jens.fischer@otto.de>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jensfischer1515/csi-otto.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "replace-in-file": "^6.1.0",
+    "reveal-md": "^4.1.2"
+  }
+}
