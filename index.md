@@ -13,31 +13,33 @@ npm run reveal
 
 ---
 
-## Taskforce Multicloud
+## How it started... 
 
-evaluate solutions for cross-cloud communications to addresses the following core needs:
+Taskforce Multicloud to address the following cross-cloud core needs:
 
 * Connection establishment
 * Core Message transmission
 * Monitoring and Alerting
 
-> Result:<br>
+> 1st Solution:<br>
 > Cross-Cloud auto-subscriptions
 
 ---
 
 ## What is it?
 
-> A solution to establish push subscriptions between the different clouds GCP <-> AWS in order to exchange events between different teams
+> A solution to <b>automatically</b> establish push subscriptions between the different clouds <b>GCP & AWS</b>
+> in order to exchange events between different teams and services
 
 ----
 
 ## Why do we need this?
 
-Current state in cross cloud setups:
+Current cross cloud setups:
 
-1. producer is responsible for establishing subscriptions to consumers endpoints
-2. The subscription is on the producer account and cannot be monitored by the consumer
+1. consumer has to request subscriptions from producer
+2. producer is responsible for establishing subscriptions
+3. The subscription <b>MUST</b> be monitored by the producer
 
 Impact:
 
@@ -46,81 +48,107 @@ Impact:
 
 ----
 
-## Goals
+## Team Values
 
-Bringing the responsibility to the consumer, so that he can:
+<h3>Bringing the responsibility to the consumer</h3>
 
-* initiate the subscription creation
-* monitor the subscription
-* trigger re-creation of removed subscription
+<p>Enable the consumer to:</p>
 
-Using central authorisation and authentication for data exchange:
+* update or create the subscription for multiple teams
+* use a central config for all subscriptions
+* delete subscriptions
+* monitor subscriptions
+* automatically re-create removed subscriptions
 
-* easy way to grant and revoke access
-* central gateway for all endpoints
-* authorization between producer and consumer
+----
+
+## Overarching Values
+
+<h3>Using central authorisation and authentication</h3>
+
+<p>Enables the teams to:</p>
+
+* easily grant and revoke access to subscriptions
+* use Neptuns role based access model
+* use a central gateway for the endpoints of all teams
+* secure communication between producer <> consumer
 
 ---
 
+## Design
+
+<img src="core_architecture_simple_multi.png">
+
+----
+
 ## The Core Architecture
 
-<style>
-img[alt=core_architecture]
-</style>
-
-![core_architecture](core_architecture.png)
+<img style="max-height:calc(66vh);max-width: calc(66vw);margin-left:-100px" src="core_architecture.png">
 
 ----
 
 ## Including Monitoring
 
-<style>
-img[alt=full_architecture] { width: 80%; }
-</style>
-
-![full_architecture](full_architecture.png)
+<img style="max-height:calc(66vh);max-width: calc(66vw);margin-left:-50px" height=600px; src="full_architecture_small.png">
 
 ---
 
-## The Subscription Format
+## Subscriptions Configuration
 
-<pre><code class="json">
-{
-  "topic": "it-ls-manta-warehousestock-nonlive-hlp-stockmovement-topic",
-  "team": "manta",
-  "service": "warehousestock",
-  "options": {
-    "pushConfig": {
-      "pushEndpoint": "https://entrance.nonlive.oxpecker.platform.otto.de:8443/warehousestock/handler9",
-      "oidcToken": {
-          "serviceAccountEmail": "warehousestock-pipeline-role@gcp-it-ls-manta-nonlive-hlp.iam.gserviceaccount.com",
-          "audience": "myaudience"
-      }
-    },
-    "deadLetterPolicy": {
-      "deadLetterTopic": "projects/gcp-it-ls-manta-nonlive-hlp/topics/warehousestock-deadletter",
-      "maxDeliveryAttempts": "10"
-    },
-    "ackDeadlineSeconds": "30",
-    "retainAckedMessages": "true",
-    "messageRetentionDuration": {
-      "seconds": "86400"
-    },
-    "expirationPolicy": {
-      "ttl": {
-        "seconds": "86400"
-      }
-    },
-    "retryPolicy": {
-      "minimumBackoff": {
-        "seconds": "300"
-      },
-      "maximumBackoff": {
-        "seconds": "300"
+<pre style="font-size:13px"><code class="json">{
+  "subscriptions": [
+    {
+      "neptun_subscriptions_path": "/v1/manta/subscriptions",
+      "topic": "it-ls-manta-warehousestock-nonlive-hlp-stockmovement-topic",
+      "team": "manta",
+      "identifier": "001",
+      "service": "warehousestock",
+      "options": {
+        "pushConfig": {
+          "pushEndpoint": "https://entrance.nonlive.oxpecker.platform.otto.de:8443/warehousestock/handler",
+          "oidcToken": {
+            "serviceAccountEmail": "warehousestock-pipeline-role@gcp-it-ls-manta-nonlive-hlp.iam.gserviceaccount.com",
+            "audience": "myaudience"
+          }
+        },
+        "deadLetterPolicy": {
+          "deadLetterTopic": "projects/gcp-it-ls-manta-nonlive-hlp/topics/warehousestock-deadletter",
+          "maxDeliveryAttempts": "10"
+        },
+        "ackDeadlineSeconds": "30",
+        "messageRetentionDuration": {
+          "seconds": "86400"
+        },
+        "retryPolicy": {
+          "minimumBackoff": {
+            "seconds": "300"
+          },
+          "maximumBackoff": {
+            "seconds": "300"
+          }
+        }
       }
     }
-  }
+  ]
 }
 </code></pre>
 
+----
+
+## Auto-Configure Services
+
+<pre style="font-size:13px"><code class="json">[
+  {
+    "path" : "/v1/manta/subscriptions",
+    "services" : [
+      "stockservice",
+      "warehousestock"
+    ]
+  },
+]
+</code></pre>
 ---
+
+## Show-Time
+
+<img src="logos.png">
